@@ -1,26 +1,93 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
-</template>
+<script setup>
+import { ref, onMounted } from 'vue'
+const transcript = ref('')
+const isRecording = ref(false)
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
+const sr = new Recognition()
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
+onMounted(() => {
+  sr.continuous = true
+  sr.interimResults = true
+
+  sr.onstart = () => {
+    console.log('SR Started')
+    isRecording.value = true
+  }
+
+  sr.onend = () => {
+    console.log('SR Stopped')
+    isRecording.value = false
+  }
+
+  sr.onresult = (evt) => {
+    for (let i = 0; i < evt.results.length; i++) {
+      const result = evt.results[i]
+
+      if (result.isFinal) CheckForCommand(result)
+    }
+
+    const t = Array.from(evt.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join('')
+
+    transcript.value = t
+  }
+})
+
+const CheckForCommand = (result) => {
+  const t = result[0].transcript;
+  if (t.includes('stop recording')) {
+    sr.stop()
+  } else if (
+      t.includes('what is the time') ||
+      t.includes('what\'s the time')||
+      t.includes('what time is it')
+  ) {
+    sr.stop()
+    alert(new Date().toLocaleTimeString())
+    setTimeout(() => sr.start(), 100)
+  }
+}
+
+const ToggleMic = () => {
+  if (isRecording.value) {
+    sr.stop()
+  } else {
+    sr.start()
   }
 }
 </script>
 
+<template>
+  <div class="app">
+    <button class="mic" @click="ToggleMic">Record</button>
+    <div class="transcript" v-text="transcript"></div>
+  </div>
+</template>
+
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Fira sans', sans-serif;
+}
+
+body {
+  background: #281936;
+  color: #FFF;
+}
+button.mic {
+  background-color: red; /* Color de fondo rojo */
+  color: white; /* Color del texto blanco */
+  padding: 10px 20px; /* Ajusta el relleno para hacerlo más grande */
+  border: none; /* Sin borde */
+  border-radius: 5px; /* Bordes redondeados */
+  cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+}
+button.mic:hover {
+  background-color: darkred; /* Cambia el color de fondo al pasar el ratón */
 }
 </style>
