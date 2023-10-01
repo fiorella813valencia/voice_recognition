@@ -51,6 +51,9 @@ const CheckForCommand = (result) => {
   }else if (t.includes('YouTube')) {
     sr.stop();
     window.open('https://www.youtube.com', '_blank');
+  }else if (t.includes('can you play a song')) {
+    sr.stop();
+    window.open('https://www.youtube.com/watch?v=TjPhzgxe3L0', '_blank');
   }
 }
 
