@@ -48,6 +48,9 @@ const CheckForCommand = (result) => {
     sr.stop()
     alert(new Date().toLocaleTimeString())
     setTimeout(() => sr.start(), 100)
+  }else if (t.includes('YouTube')) {
+    sr.stop();
+    window.open('https://www.youtube.com', '_blank');
   }
 }
 
